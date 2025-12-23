@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EcoChoices: Carbon Footprint Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e8f5e9;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #2e7d32;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 1rem;
+    }
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      background: #c8e6c9;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    .card {
+      background: white;
+      padding: 1.2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      margin-bottom: 1rem;
+    }
+    .choices button {
+      display: block;
+      width: 100%;
+      padding: 0.7rem;
+      margin: 0.5rem 0;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .good { background: #81c784; }
+    .bad { background: #e57373; }
+    .neutral { background: #fff176; }
+    .feedback {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+      color: #2e7d32;
+    }
+    .badge {
+      display: inline-block;
+      background: #ffca28;
+      padding: 0.3rem 0.7rem;
+      border-radius: 20px;
+      margin-right: 0.5rem;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>EcoChoices 🌍</h1>
+    <p>Learn how daily choices impact your carbon footprint</p>
+  </header>
+
+  <div class="container">
+    <div class="stats">
+      <div>Score: <span id="score">0</span></div>
+      <div>Carbon Footprint: <span id="carbon">50</span></div>
+      <div>Badges: <span id="badges">None</span></div>
+    </div>
+
+    <div class="card" id="scenario-card">
+      <h2 id="scenario-title">Welcome!</h2>
+      <p id="scenario-text">Make sustainable decisions to reduce your carbon footprint and protect the environment.</p>
+      <div class="choices" id="choices"></div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+  </div>
+
+  <footer>
+    Ethical & Sustainable Computing Awareness Game
+  </footer>
+
+  <script>
+    let score = 0;
+    let carbon = 50; // higher is worse
+    let badges = [];
+
+    const scenarios = [
+      {
+        title: "Daily Commute",
+        text: "How do you travel to work or college today?",
+        choices: [
+          { text: "Drive alone in a petrol car", score: -5, carbon: +10, type: "bad", feedback: "Increases emissions and traffic pollution." },
+          { text: "Use public transport", score: +5, carbon: -5, type: "good", feedback: "Reduces per-person carbon emissions." },
+          { text: "Cycle or walk", score: +10, carbon: -10, type: "good", feedback: "Zero emissions and great for health!" }
+        ]
+      },
+      {
+        title: "Energy Usage",
+        text: "You are leaving your room. What do you do?",
+        choices: [
+          { text: "Leave lights and AC on", score: -5, carbon: +8, type: "bad", feedback: "Wastes electricity and increases carbon footprint." },
+          { text: "Switch off unnecessary appliances", score: +8, carbon: -6, type: "good", feedback: "Saves energy and reduces emissions." }
+        ]
+      },
+      {
+        title: "Cloud Computing Choice",
+        text: "Your app needs cloud hosting. Which option do you choose?",
+        choices: [
+          { text: "Cheapest provider with no sustainability policy", score: -4, carbon: +6, type: "bad", feedback: "Low cost but high environmental impact." },
+          { text: "Energy-efficient green data center", score: +10, carbon: -8, type: "good", feedback: "Ethical and sustainable computing choice." }
+        ]
+      },
+      {
+        title: "E-Waste Management",
+        text: "Your old laptop is slow. What do you do?",
+        choices: [
+          { text: "Throw it away", score: -6, carbon: +7, type: "bad", feedback: "Creates harmful e-waste." },
+          { text: "Recycle or donate it", score: +9, carbon: -7, type: "good", feedback: "Promotes circular economy." }
+        ]
+      }
+    ];
+
+    let currentScenario = 0;
+
+    function updateStats() {
+      document.getElementById('score').textContent = score;
+      document.getElementById('carbon').textContent = carbon;
+      document.getElementById('badges').textContent = badges.length ? badges.join(', ') : 'None';
+    }
+
+    function checkBadges() {
+      if (score >= 20 && !badges.includes('Green Thinker')) {
+        badges.push('Green Thinker');
+      }
+      if (carbon <= 20 && !badges.includes('Low Carbon Hero')) {
+        badges.push('Low Carbon Hero');
+      }
+    }
+
+    function loadScenario() {
+      if (currentScenario >= scenarios.length) {
+        endGame();
+        return;
+      }
+
+      const scenario = scenarios[currentScenario];
+      document.getElementById('scenario-title').textContent = scenario.title;
+      document.getElementById('scenario-text').textContent = scenario.text;
+      const choicesDiv = document.getElementById('choices');
+      const feedbackDiv = document.getElementById('feedback');
+      choicesDiv.innerHTML = '';
+      feedbackDiv.textContent = '';
+
+      scenario.choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.textContent = choice.text;
+        btn.className = choice.type;
+        btn.onclick = () => {
+          score += choice.score;
+          carbon += choice.carbon;
+          carbon = Math.max(0, carbon);
+          feedbackDiv.textContent = choice.feedback;
+          checkBadges();
+          updateStats();
+          currentScenario++;
+          setTimeout(loadScenario, 1200);
+        };
+        choicesDiv.appendChild(btn);
+      });
+    }
+
+    function endGame() {
+      const card = document.getElementById('scenario-card');
+      let message = '';
+      if (carbon > 60) {
+        message = 'High carbon footprint! The environment is severely degraded. 🌫️';
+      } else if (carbon > 30) {
+        message = 'Moderate impact. Sustainable choices can still save the planet. 🌱';
+      } else {
+        message = 'Excellent! You protected the environment with ethical computing choices. 🌍✨';
+      }
+
+      card.innerHTML = `
+        <h2>Game Over</h2>
+        <p>${message}</p>
+        <p><strong>Final Score:</strong> ${score}</p>
+        <p><strong>Badges Earned:</strong> ${badges.join(', ') || 'None'}</p>
+        <button onclick="location.reload()">Play Again</button>
+      `;
+    }
+
+    updateStats();
+    loadScenario();
+  </script>
+</body>
+</html>
